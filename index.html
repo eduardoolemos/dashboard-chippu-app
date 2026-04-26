@@ -34,13 +34,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 html,body { background:var(--bg); color:var(--text); font-family:var(--font-body); font-size:14px; min-height:100vh; }
 
-/* HEADER */
-.header {
-  border-bottom:1px solid var(--border);
-  padding:0 32px; height:60px;
-  display:flex; align-items:center; justify-content:space-between;
-  position:sticky; top:0; background:var(--bg); z-index:100;
-}
+.header { border-bottom:1px solid var(--border); padding:0 32px; height:60px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:var(--bg); z-index:100; }
 .logo { display:flex; align-items:center; gap:10px; font-family:var(--font-head); font-size:18px; font-weight:800; color:var(--white); letter-spacing:-0.02em; }
 .logo span { color:var(--teal); }
 .logo-sub { font-family:var(--font-mono); font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:0.1em; margin-left:4px; align-self:flex-end; margin-bottom:3px; }
@@ -54,22 +48,18 @@ html,body { background:var(--bg); color:var(--text); font-family:var(--font-body
 .btn-refresh:hover svg { transform:rotate(180deg); }
 .last-update { font-family:var(--font-mono); font-size:10px; color:var(--text3); }
 
-/* TABS */
 .tabs { display:flex; gap:2px; padding:0 32px; border-bottom:1px solid var(--border); background:var(--bg); overflow-x:auto; }
 .tab { padding:14px 20px; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text2); cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; white-space:nowrap; }
 .tab.active { color:var(--teal); border-bottom-color:var(--teal); }
 .tab:hover:not(.active) { color:var(--text); }
 
-/* CONTAINER */
-.container { max-width:1280px; margin:0 auto; padding:28px 32px; }
+.container { max-width:1400px; margin:0 auto; padding:28px 32px; }
 
-/* LOADING */
 .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; gap:16px; }
 .spinner { width:36px; height:36px; border:2px solid var(--border2); border-top-color:var(--teal); border-radius:50%; animation:spin 0.8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
 .loading-txt { font-family:var(--font-mono); font-size:12px; color:var(--text2); text-transform:uppercase; letter-spacing:0.1em; }
 
-/* KPI GRID */
 .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
 .kpi-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; position:relative; overflow:hidden; transition:border-color 0.2s; }
 .kpi-card:hover { border-color:var(--border2); }
@@ -84,51 +74,47 @@ html,body { background:var(--bg); color:var(--text); font-family:var(--font-body
 .kpi-value.gold  { color:var(--gold); }
 .kpi-value.red   { color:var(--red); }
 .kpi-value.purple{ color:var(--purple); }
-.kpi-value.small { font-size:28px; }
+.kpi-value.small { font-size:26px; }
+.kpi-value.tiny  { font-size:18px; }
 .kpi-sub { font-size:12px; color:var(--text2); }
 
-/* GRID 2 COLS */
 .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
 .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:24px; }
 .col-span-2 { grid-column: span 2; }
 
-/* CARD */
 .card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:22px; }
 .card-title { font-family:var(--font-head); font-size:14px; font-weight:700; color:var(--white); margin-bottom:4px; text-transform:uppercase; letter-spacing:0.04em; }
 .card-sub { font-family:var(--font-mono); font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:20px; }
+.card-header-row { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+.card-header-row .card-sub { margin-bottom:0; }
 .chart-wrap { position:relative; }
 
-/* FILTER BAR (Métricas de Tráfego) */
-.filter-bar {
-  display:flex; flex-wrap:wrap; gap:10px; align-items:center;
-  margin-bottom:20px; padding:14px 18px;
-  background:var(--surface); border:1px solid var(--border); border-radius:12px;
-}
+.level-toggle { display:flex; gap:2px; background:var(--bg2); border:1px solid var(--border2); border-radius:8px; padding:3px; }
+.level-tab { padding:6px 14px; border-radius:5px; background:transparent; color:var(--text2); cursor:pointer; font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; transition:all 0.15s; border:none; }
+.level-tab.active { background:var(--teal-dim); color:var(--teal); }
+.level-tab:hover:not(.active) { color:var(--text); }
+
+.filter-bar { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:16px; padding:14px 18px; background:var(--surface); border:1px solid var(--border); border-radius:12px; }
+.filter-row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
 .filter-label { font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; color:var(--text2); margin-right:4px; }
 .period-tabs { display:flex; gap:4px; }
-.period-tab {
-  padding:6px 12px; border-radius:6px; border:1px solid var(--border2);
-  background:transparent; color:var(--text2); cursor:pointer;
-  font-family:var(--font-mono); font-size:11px; text-transform:uppercase;
-  letter-spacing:0.06em; transition:all 0.15s;
-}
+.period-tab { padding:6px 12px; border-radius:6px; border:1px solid var(--border2); background:transparent; color:var(--text2); cursor:pointer; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.06em; transition:all 0.15s; }
 .period-tab.active { background:var(--teal-dim); border-color:var(--teal); color:var(--teal); }
 .period-tab:hover:not(.active) { border-color:var(--text2); color:var(--text); }
 .date-inputs { display:flex; gap:8px; align-items:center; }
-.date-inp {
-  background:var(--bg2); border:1px solid var(--border2); border-radius:6px;
-  padding:6px 10px; color:var(--white); font-family:var(--font-mono);
-  font-size:11px; color-scheme:dark; outline:none;
-}
+.date-inp { background:var(--bg2); border:1px solid var(--border2); border-radius:6px; padding:6px 10px; color:var(--white); font-family:var(--font-mono); font-size:11px; color-scheme:dark; outline:none; }
 .date-inp:focus { border-color:var(--teal); }
-.camp-select {
-  background:var(--bg2); border:1px solid var(--border2); border-radius:6px;
-  padding:7px 10px; color:var(--white); font-family:var(--font-mono);
-  font-size:11px; cursor:pointer; max-width:240px; outline:none;
-}
+.camp-select { background:var(--bg2); border:1px solid var(--border2); border-radius:6px; padding:7px 10px; color:var(--white); font-family:var(--font-mono); font-size:11px; cursor:pointer; outline:none; min-width:150px; max-width:240px; }
 .camp-select:focus { border-color:var(--teal); }
 
-/* FUNIL */
+.toggle-switch { display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; margin-left:auto; }
+.toggle-switch input { display:none; }
+.toggle-track { width:36px; height:20px; background:var(--border2); border-radius:10px; position:relative; transition:background 0.2s; }
+.toggle-thumb { position:absolute; top:2px; left:2px; width:16px; height:16px; background:var(--white); border-radius:50%; transition:transform 0.2s; }
+.toggle-switch input:checked + .toggle-track { background:var(--teal); }
+.toggle-switch input:checked + .toggle-track .toggle-thumb { transform:translateX(16px); }
+.toggle-label { font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text2); }
+
 .funnel-wrap { display:flex; flex-direction:column; gap:6px; }
 .funnel-step { display:flex; align-items:center; gap:12px; }
 .funnel-bar-wrap { flex:1; height:36px; background:var(--bg2); border-radius:6px; overflow:hidden; position:relative; }
@@ -141,7 +127,6 @@ html,body { background:var(--bg); color:var(--text); font-family:var(--font-body
 .funnel-drop-line { width:1px; height:14px; background:var(--border2); margin-left:16px; }
 .funnel-drop-txt { font-family:var(--font-mono); font-size:10px; color:var(--red); }
 
-/* TABLE */
 .table-wrap { overflow-x:auto; }
 table { width:100%; border-collapse:collapse; }
 thead th { font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text2); padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); white-space:nowrap; }
@@ -154,35 +139,19 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
 .td-red  { color:var(--red);  font-family:var(--font-mono); font-size:12px; }
 .td-gold { color:var(--gold); font-family:var(--font-mono); font-size:12px; }
 .td-purple { color:var(--purple); font-family:var(--font-mono); font-size:12px; }
-.td-name { max-width:240px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.td-name { max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .td-na { color:var(--text3); font-family:var(--font-mono); font-size:12px; }
 
-.badge { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:20px; font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.05em; }
-.badge.teal   { background:var(--teal-dim); color:var(--teal); border:1px solid rgba(0,201,177,0.2); }
-.badge.gold   { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(245,200,66,0.2); }
-.badge.red    { background:var(--red-dim);  color:var(--red);  border:1px solid rgba(255,74,74,0.2); }
-.badge.purple { background:var(--purple-dim); color:var(--purple); border:1px solid rgba(155,127,244,0.2); }
-
-/* PROGRESS BAR */
 .prog-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
 .prog-label { font-size:12px; color:var(--text); width:180px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .prog-bar-wrap { flex:1; height:6px; background:var(--border); border-radius:3px; overflow:hidden; }
 .prog-bar { height:100%; border-radius:3px; transition:width 1s cubic-bezier(0.4,0,0.2,1); }
 .prog-val { font-family:var(--font-mono); font-size:11px; color:var(--text2); width:40px; text-align:right; flex-shrink:0; }
 
-/* EMPTY */
 .empty { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:48px; gap:10px; color:var(--text2); }
 .empty-icon { font-size:32px; opacity:0.4; }
 .empty-txt { font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.1em; }
 
-/* INFO BANNER */
-.info-banner {
-  background:var(--teal-dim); border:1px solid rgba(0,201,177,0.2);
-  border-radius:10px; padding:12px 16px; margin-bottom:16px;
-  font-size:12px; color:var(--teal); display:flex; align-items:center; gap:10px;
-}
-
-/* CONFIG PANEL */
 .config-panel { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:28px; max-width:560px; margin:0 auto; }
 .config-title { font-family:var(--font-head); font-size:20px; font-weight:800; color:var(--white); margin-bottom:6px; }
 .config-sub { font-size:13px; color:var(--text2); margin-bottom:24px; line-height:1.6; }
@@ -199,11 +168,6 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
 .step-txt { font-size:12px; color:var(--text2); line-height:1.6; }
 .step-txt strong { color:var(--text); }
 
-/* SECTION TITLE */
-.section-title { font-family:var(--font-head); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--text2); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-.section-title::after { content:''; flex:1; height:1px; background:var(--border); }
-
-/* RESPONSIVE */
 @media (max-width: 900px) {
   .kpi-grid { grid-template-columns:repeat(2,1fr); }
   .grid-2, .grid-3 { grid-template-columns:1fr; }
@@ -212,6 +176,7 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
   .header { padding:0 16px; }
   .tabs { padding:0 16px; }
   .filter-bar { padding:12px; }
+  .toggle-switch { margin-left:0; }
 }
 </style>
 </head>
@@ -243,13 +208,11 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
 
 <div class="container">
 
-  <!-- LOADING -->
   <div class="loading" id="loadingScreen">
     <div class="spinner"></div>
     <div class="loading-txt">Conectando à planilha...</div>
   </div>
 
-  <!-- CONFIG -->
   <div id="configScreen" style="display:none; max-width:560px; margin:40px auto;">
     <div class="config-panel">
       <div class="config-title">Configurar Planilha</div>
@@ -266,29 +229,24 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
         </div>
         <div class="config-step">
           <div class="step-num">3</div>
-          <div class="step-txt">Cole o <strong>ID da planilha</strong> abaixo (está na URL entre /d/ e /edit)</div>
+          <div class="step-txt">Cole os <strong>GIDs</strong> de cada aba abaixo (número no final da URL ao clicar na aba)</div>
         </div>
       </div>
 
       <div class="config-field">
-        <label>ID da Planilha</label>
-        <input type="text" id="sheetId" placeholder="1Nu2gUEKeBqZVFvpoDenUbGDheT3kTU7QsM1DQO_pFYM" value="1Nu2gUEKeBqZVFvpoDenUbGDheT3kTU7QsM1DQO_pFYM">
-        <div class="config-hint">Exemplo: docs.google.com/spreadsheets/d/<strong>ID_AQUI</strong>/edit</div>
-      </div>
-      <div class="config-field">
         <label>GID da aba "TRACK ETAPAS"</label>
-        <input type="text" id="gidEtapas" placeholder="0" value="1961049271">
-        <div class="config-hint">Número no final da URL quando você clica na aba</div>
+        <input type="text" id="gidEtapas" placeholder="0">
+        <div class="config-hint">Tracking de etapas do funil</div>
       </div>
       <div class="config-field">
         <label>GID da aba "CONVERSOES"</label>
-        <input type="text" id="gidConversoes" placeholder="0" value="">
-        <div class="config-hint">Clique na aba CONVERSOES e veja o ?gid= na URL</div>
+        <input type="text" id="gidConversoes" placeholder="0">
+        <div class="config-hint">Leads que completaram o funil</div>
       </div>
       <div class="config-field">
         <label>GID da aba "EXTRAÇÃO GERENCIADOR" (Meta Ads)</label>
-        <input type="text" id="gidAds" placeholder="907185909" value="907185909">
-        <div class="config-hint">Dados do gerenciador de anúncios (Spend, Impressions, Cliques)</div>
+        <input type="text" id="gidAds" placeholder="907185909">
+        <div class="config-hint">Dados do gerenciador de anúncios</div>
       </div>
       <button class="btn-load" onclick="saveConfigAndLoad()">Carregar Dashboard →</button>
     </div>
@@ -296,9 +254,7 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
 
   <!-- TAB FUNIL -->
   <div id="tabFunil" style="display:none;">
-
     <div class="kpi-grid" id="kpiFunil"></div>
-
     <div class="grid-2" style="margin-bottom:24px;">
       <div class="card" style="grid-column:span 2;">
         <div class="card-title">Funil de Etapas</div>
@@ -306,7 +262,6 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
         <div class="funnel-wrap" id="funnelBars"></div>
       </div>
     </div>
-
     <div class="grid-2">
       <div class="card">
         <div class="card-title">Tempo Médio por Etapa</div>
@@ -321,7 +276,6 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
         </div>
       </div>
     </div>
-
     <div style="margin-top:16px;" class="grid-2">
       <div class="card">
         <div class="card-title">Top Campanhas</div>
@@ -341,14 +295,11 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
         </div>
       </div>
     </div>
-
   </div>
 
   <!-- TAB CONVERSÕES -->
   <div id="tabConversoes" style="display:none;">
-
     <div class="kpi-grid" id="kpiConversoes"></div>
-
     <div class="grid-2" style="margin-bottom:16px;">
       <div class="card">
         <div class="card-title">Perfil dos Leads</div>
@@ -365,7 +316,6 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
         </div>
       </div>
     </div>
-
     <div class="grid-2" style="margin-bottom:16px;">
       <div class="card">
         <div class="card-title">Controle de Gastos</div>
@@ -378,7 +328,6 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
         <div id="campanhasConv"></div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-title">Últimas Conversões</div>
       <div class="card-sub">Leads que completaram o funil</div>
@@ -391,32 +340,54 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
         </table>
       </div>
     </div>
-
   </div>
 
   <!-- TAB MÉTRICAS DE TRÁFEGO -->
   <div id="tabTrafego" style="display:none;">
 
     <div class="filter-bar">
-      <span class="filter-label">Período:</span>
-      <div class="period-tabs">
-        <button class="period-tab" data-d="7"  onclick="setPeriod(7)">7D</button>
-        <button class="period-tab" data-d="15" onclick="setPeriod(15)">15D</button>
-        <button class="period-tab active" data-d="30" onclick="setPeriod(30)">30D</button>
-        <button class="period-tab" data-d="90" onclick="setPeriod(90)">90D</button>
-        <button class="period-tab" data-d="0"  onclick="setPeriod(0)">Custom</button>
+      <div class="filter-row">
+        <span class="filter-label">Período:</span>
+        <div class="period-tabs">
+          <button class="period-tab" data-d="7"  onclick="setPeriod(7)">7D</button>
+          <button class="period-tab" data-d="15" onclick="setPeriod(15)">15D</button>
+          <button class="period-tab active" data-d="30" onclick="setPeriod(30)">30D</button>
+          <button class="period-tab" data-d="90" onclick="setPeriod(90)">90D</button>
+          <button class="period-tab" data-d="0"  onclick="setPeriod(0)">Custom</button>
+        </div>
+        <div class="date-inputs" id="dateInputs" style="display:none">
+          <input class="date-inp" type="date" id="dateFrom" onchange="applyCustom()">
+          <span style="color:var(--text3)">→</span>
+          <input class="date-inp" type="date" id="dateTo" onchange="applyCustom()">
+        </div>
       </div>
 
-      <div class="date-inputs" id="dateInputs" style="display:none">
-        <input class="date-inp" type="date" id="dateFrom" onchange="applyCustom()">
-        <span style="color:var(--text3)">→</span>
-        <input class="date-inp" type="date" id="dateTo" onchange="applyCustom()">
-      </div>
+      <label class="toggle-switch" title="Mostra apenas campanhas/conjuntos/anúncios que tenham leads">
+        <input type="checkbox" id="onlyWithLeads" onchange="onToggleLeads()">
+        <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        <span class="toggle-label">Só com leads</span>
+      </label>
+    </div>
 
-      <span class="filter-label" style="margin-left:auto;">Campanha:</span>
-      <select class="camp-select" id="campSelect" onchange="renderTrafego()">
-        <option value="">Todas as campanhas</option>
-      </select>
+    <div class="filter-bar">
+      <div class="filter-row">
+        <span class="filter-label">Campanha:</span>
+        <select class="camp-select" id="campSelect" onchange="onCampaignChange()">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">Conjunto:</span>
+        <select class="camp-select" id="adsetSelect" onchange="onAdsetChange()">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">Anúncio:</span>
+        <select class="camp-select" id="adSelect" onchange="renderTrafego()">
+          <option value="">Todos</option>
+        </select>
+      </div>
     </div>
 
     <div id="trafegoEmpty" style="display:none;">
@@ -427,7 +398,6 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
     </div>
 
     <div id="trafegoContent">
-
       <div class="kpi-grid" id="kpiTrafego"></div>
 
       <div class="grid-2" style="margin-bottom:24px;">
@@ -448,12 +418,21 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
       </div>
 
       <div class="card" style="margin-bottom:16px;">
-        <div class="card-title">Desempenho por Campanha</div>
-        <div class="card-sub">Cruzamento entre Meta Ads e leads do funil</div>
+        <div class="card-header-row">
+          <div>
+            <div class="card-title">Desempenho</div>
+            <div class="card-sub" id="perfSub">Cruzamento entre Meta Ads e leads do funil</div>
+          </div>
+          <div class="level-toggle">
+            <button class="level-tab active" data-level="campaign" onclick="setLevel('campaign')">Campanha</button>
+            <button class="level-tab" data-level="adset" onclick="setLevel('adset')">Conjunto</button>
+            <button class="level-tab" data-level="ad" onclick="setLevel('ad')">Anúncio</button>
+          </div>
+        </div>
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>Campanha</th>
+              <th id="perfHeadName">Campanha</th>
               <th>Verba</th>
               <th>Impressões</th>
               <th>Cliques</th>
@@ -469,11 +448,8 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
           </table>
         </div>
       </div>
-
     </div>
-
   </div>
-
 </div>
 
 <script>
@@ -482,9 +458,18 @@ const SHEET_ID = '1Nu2gUEKeBqZVFvpoDenUbGDheT3kTU7QsM1DQO_pFYM';
 const PUBLISHED_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSkyevntG5ve-0g2ySy6kXHyARA6WcWAXwN85MFHM5bSs2rYMXBPlhXcPEJJIDk0GkJ0gezEX2oovvN/pub?output=csv';
 const EXPORT_BASE    = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
 
+const CFG_KEY = 'chippu_dash_cfg_v3';
+
 let GID_ETAPAS = '1961049271';
 let GID_CONV   = '';
 let GID_ADS    = '907185909';
+
+try {
+  const saved = JSON.parse(localStorage.getItem(CFG_KEY) || '{}');
+  if (saved.gidEtapas) GID_ETAPAS = saved.gidEtapas;
+  if (saved.gidConv)   GID_CONV   = saved.gidConv;
+  if (saved.gidAds)    GID_ADS    = saved.gidAds;
+} catch {}
 
 const TELA_ORDER = [0,1,2,3,4,5,6,7,8,9];
 const TELA_NAMES = {
@@ -496,8 +481,8 @@ const TELA_NAMES = {
 let chartDev = null, chartPerfis = null, chartAssign = null;
 let chartSpend = null, chartLeads = null;
 let currentTab = 'funil';
+let currentLevel = 'campaign';
 
-// Dados brutos para a aba de tráfego
 let RAW = { etapas:[], conv:[], ads:[] };
 let filterFrom = null, filterTo = null;
 
@@ -513,7 +498,6 @@ function switchTab(tab) {
   document.getElementById('tabTrafego').style.display     = tab==='trafego'     ? 'block' : 'none';
   document.getElementById('configScreen').style.display   = tab==='config'      ? 'block' : 'none';
   document.getElementById('loadingScreen').style.display  = 'none';
-
   if (tab === 'trafego') renderTrafego();
 }
 
@@ -571,12 +555,11 @@ async function loadAll() {
       fetchCSV(GID_ETAPAS).then(d => RAW.etapas = d),
       GID_CONV ? fetchCSV(GID_CONV).then(d => RAW.conv = d) : Promise.resolve(RAW.conv = []),
     ];
-    // Aba de Meta Ads usa export direto (não precisa estar publicada)
     if (GID_ADS) {
       jobs.push(
         fetchCSV(GID_ADS, true)
           .then(d => RAW.ads = d)
-          .catch(e => { console.warn('Ads via export falhou, tentando pub:', e); return fetchCSV(GID_ADS).then(d => RAW.ads = d); })
+          .catch(() => fetchCSV(GID_ADS).then(d => RAW.ads = d))
           .catch(e => { console.warn('Ads não disponível:', e); RAW.ads = []; })
       );
     }
@@ -584,8 +567,8 @@ async function loadAll() {
 
     renderFunil(RAW.etapas);
     renderConversoes(RAW.conv);
-    buildCampaignFilter();
     setPeriodSilent(30);
+    rebuildAllFilters();
 
     document.getElementById('lastUpdate').textContent =
       'Atualizado ' + new Date().toLocaleTimeString('pt-BR');
@@ -599,15 +582,20 @@ async function loadAll() {
         <div style="font-size:32px;margin-bottom:16px;">⚠️</div>
         <div style="font-family:var(--font-head);font-size:18px;color:var(--white);margin-bottom:10px;">Erro ao carregar</div>
         <div style="color:var(--text2);font-size:13px;margin-bottom:24px;line-height:1.6;">${e.message}</div>
-        <div style="color:var(--text2);font-size:12px;margin-bottom:20px;">Certifique-se que a planilha está publicada:<br><strong style="color:var(--text);">Arquivo → Compartilhar → Publicar na web</strong></div>
         <button class="btn-load" onclick="switchTab('config')" style="max-width:220px;margin:0 auto;display:block;">Ir para Config →</button>
       </div>`;
   }
 }
 
-// ── RENDER FUNIL ───────────────────────
+// ════════════════════════════════════════════════════════════════════════
+// RENDER FUNIL
+// ════════════════════════════════════════════════════════════════════════
 function renderFunil(rows) {
-  if (!rows.length) return;
+  if (!rows.length) {
+    document.getElementById('kpiFunil').innerHTML = '<div style="color:var(--text2);font-size:13px;grid-column:span 4;padding:20px 0;">Sem dados de etapas — verifique o GID em Config.</div>';
+    document.getElementById('funnelBars').innerHTML = '<div class="empty"><div class="empty-icon">📊</div><div class="empty-txt">Sem dados</div></div>';
+    return;
+  }
 
   const sessoes = {};
   rows.forEach(r => {
@@ -757,7 +745,9 @@ function renderFunil(rows) {
   }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:24px;">Sem dados</td></tr>';
 }
 
-// ── RENDER CONVERSÕES ──────────────────
+// ════════════════════════════════════════════════════════════════════════
+// RENDER CONVERSÕES
+// ════════════════════════════════════════════════════════════════════════
 function renderConversoes(rows) {
   if (!rows.length) {
     document.getElementById('kpiConversoes').innerHTML = '<div style="color:var(--text2);font-size:13px;grid-column:span 4;padding:20px 0;">Configure a aba CONVERSOES no painel Config.</div>';
@@ -883,7 +873,6 @@ function renderConversoes(rows) {
 // MÉTRICAS DE TRÁFEGO
 // ════════════════════════════════════════════════════════════════════════
 
-// Helpers
 function pn(v) { return parseFloat(String(v||0).replace(/[^\d.,-]/g,'').replace(',','.')) || 0; }
 function brl(n) { return 'R$ ' + n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmt(n) {
@@ -924,18 +913,18 @@ function inPeriod(d) {
   return true;
 }
 
-// Detecta a coluna de uma row baseada em um regex
 function findCol(sample, regex) {
   return Object.keys(sample || {}).find(k => regex.test(k)) || '';
 }
 
-// Helpers para acessar campos com nomes variados na aba Ads
-function getSpend(r)  { return pn(r['Spend (Cost, Amount Spent)'] ?? r['Spend'] ?? r['Amount Spent'] ?? r['spend']); }
-function getImp(r)    { return pn(r['Impressions'] ?? r['impressions']); }
-function getClicks(r) { return pn(r['Action Link Clicks'] ?? r['Link Clicks'] ?? r['link_clicks']); }
-function getLPV(r)    { return pn(r['Action Landing Page View'] ?? r['Landing Page Views'] ?? r['landing_page_views']); }
-function getCampName(r) { return r['Campaign Name'] || r['campaign_name'] || r['Campanha'] || ''; }
-function getAdsDate(r)  { return r['Date'] || r['date'] || r['Data'] || ''; }
+function getSpend(r)     { return pn(r['Spend (Cost, Amount Spent)'] ?? r['Spend'] ?? r['Amount Spent'] ?? r['spend']); }
+function getImp(r)       { return pn(r['Impressions'] ?? r['impressions']); }
+function getClicks(r)    { return pn(r['Action Link Clicks'] ?? r['Link Clicks'] ?? r['link_clicks']); }
+function getLPV(r)       { return pn(r['Action Landing Page View'] ?? r['Landing Page Views'] ?? r['landing_page_views']); }
+function getCampName(r)  { return (r['Campaign Name'] || r['campaign_name'] || r['Campanha'] || '').trim(); }
+function getAdsetName(r) { return (r['Adset Name']    || r['adset_name']    || r['Conjunto'] || '').trim(); }
+function getAdName(r)    { return (r['Ad Name']       || r['ad_name']       || r['Anuncio']  || r['Anúncio'] || '').trim(); }
+function getAdsDate(r)   { return r['Date'] || r['date'] || r['Data'] || ''; }
 
 // ── PERIOD ─────────────────────────────
 function setPeriodSilent(days) {
@@ -950,12 +939,11 @@ function setPeriodSilent(days) {
 function setPeriod(days) {
   document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
   document.querySelector(`.period-tab[data-d="${days}"]`)?.classList.add('active');
-
   const di = document.getElementById('dateInputs');
   if (days === 0) { di.style.display = 'flex'; return; }
   di.style.display = 'none';
-
   setPeriodSilent(days);
+  rebuildAllFilters();
   renderTrafego();
 }
 
@@ -965,23 +953,109 @@ function applyCustom() {
   if (!f || !t) return;
   filterFrom = new Date(f + 'T00:00:00');
   filterTo   = new Date(t + 'T23:59:59');
+  rebuildAllFilters();
   renderTrafego();
 }
 
-// ── BUILD CAMPAIGN FILTER ──────────────
-function buildCampaignFilter() {
+// ── LEVEL ──────────────────────────────
+function setLevel(level) {
+  currentLevel = level;
+  document.querySelectorAll('.level-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.level === level);
+  });
+  const titleMap = { campaign:'Campanha', adset:'Conjunto', ad:'Anúncio' };
+  document.getElementById('perfHeadName').textContent = titleMap[level];
+  renderTrafego();
+}
+
+// ── FILTROS EM CASCATA ─────────────────
+// Identifica conjuntos de campanhas/adsets/ads que tiveram leads no período
+function leadKeysInPeriod() {
+  const convDateCol = findCol(RAW.conv[0], /^(data_hora|date|timestamp|data|criado|created)/i);
+  const camps = new Set(), adsets = new Set(), ads = new Set();
+  RAW.conv.forEach(r => {
+    if (convDateCol) {
+      const d = parseDate(r[convDateCol]);
+      if (!inPeriod(d)) return;
+    }
+    const c  = (r.utm_campaign || '').trim();
+    const as = (r.utm_content  || '').trim();
+    const ad = (r.utm_term     || '').trim();
+    if (c)  camps.add(c);
+    if (as) adsets.add(as);
+    if (ad) ads.add(ad);
+  });
+  return { camps, adsets, ads };
+}
+
+function rebuildAllFilters() {
   if (!RAW.ads.length) return;
-  const names = [...new Set(RAW.ads.map(r => getCampName(r)).filter(Boolean))].sort();
-  const sel = document.getElementById('campSelect');
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">Todas as campanhas</option>';
-  names.forEach(n => {
+  const onlyLeads = document.getElementById('onlyWithLeads')?.checked || false;
+  const leadKeys = leadKeysInPeriod();
+
+  // Linhas de Ads dentro do período
+  const adsInPeriod = RAW.ads.filter(r => inPeriod(parseDate(getAdsDate(r))));
+
+  const curCamp  = document.getElementById('campSelect').value;
+  const curAdset = document.getElementById('adsetSelect').value;
+  const curAd    = document.getElementById('adSelect').value;
+
+  // Campanhas disponíveis
+  let camps = [...new Set(adsInPeriod.map(getCampName).filter(Boolean))];
+  if (onlyLeads) camps = camps.filter(c => leadKeys.camps.has(c));
+  camps.sort();
+  fillSelect('campSelect', camps, curCamp, 'Todas');
+  const selCamp = camps.includes(curCamp) ? curCamp : '';
+
+  // Conjuntos
+  const adsetsRows = selCamp
+    ? adsInPeriod.filter(r => getCampName(r) === selCamp)
+    : adsInPeriod;
+  let adsets = [...new Set(adsetsRows.map(getAdsetName).filter(Boolean))];
+  if (onlyLeads) adsets = adsets.filter(a => leadKeys.adsets.has(a));
+  adsets.sort();
+  fillSelect('adsetSelect', adsets, curAdset, 'Todos');
+  const selAdset = adsets.includes(curAdset) ? curAdset : '';
+
+  // Anúncios
+  let adsRowsFiltered = adsInPeriod;
+  if (selCamp)  adsRowsFiltered = adsRowsFiltered.filter(r => getCampName(r) === selCamp);
+  if (selAdset) adsRowsFiltered = adsRowsFiltered.filter(r => getAdsetName(r) === selAdset);
+  let adsList = [...new Set(adsRowsFiltered.map(getAdName).filter(Boolean))];
+  if (onlyLeads) adsList = adsList.filter(a => leadKeys.ads.has(a));
+  adsList.sort();
+  fillSelect('adSelect', adsList, curAd, 'Todos');
+}
+
+function fillSelect(id, items, current, allLabel) {
+  const sel = document.getElementById(id);
+  sel.innerHTML = `<option value="">${allLabel}</option>`;
+  items.forEach(n => {
     const o = document.createElement('option');
     o.value = n;
     o.textContent = n.length > 50 ? n.slice(0,48)+'…' : n;
     sel.appendChild(o);
   });
-  if (cur) sel.value = cur;
+  if (current && items.includes(current)) sel.value = current;
+  else sel.value = '';
+}
+
+function onCampaignChange() {
+  document.getElementById('adsetSelect').value = '';
+  document.getElementById('adSelect').value = '';
+  rebuildAllFilters();
+  renderTrafego();
+}
+
+function onAdsetChange() {
+  document.getElementById('adSelect').value = '';
+  rebuildAllFilters();
+  renderTrafego();
+}
+
+function onToggleLeads() {
+  rebuildAllFilters();
+  renderTrafego();
 }
 
 // ── RENDER TRÁFEGO ─────────────────────
@@ -994,33 +1068,46 @@ function renderTrafego() {
   document.getElementById('trafegoEmpty').style.display = 'none';
   document.getElementById('trafegoContent').style.display = 'block';
 
-  const campFilter = document.getElementById('campSelect').value;
+  const fCamp  = document.getElementById('campSelect').value;
+  const fAdset = document.getElementById('adsetSelect').value;
+  const fAd    = document.getElementById('adSelect').value;
+  const onlyLeads = document.getElementById('onlyWithLeads').checked;
 
-  // Detecta coluna de data nas conversões
   const convDateCol = findCol(RAW.conv[0], /^(data_hora|date|timestamp|data|criado|created)/i);
+  const leadKeys = leadKeysInPeriod();
 
-  // Filtra ads
-  const adsRows = RAW.ads.filter(r => {
+  // Filtro principal de Ads
+  let adsRows = RAW.ads.filter(r => {
     const d = parseDate(getAdsDate(r));
     if (!inPeriod(d)) return false;
-    if (campFilter && getCampName(r) !== campFilter) return false;
+    if (fCamp  && getCampName(r)  !== fCamp)  return false;
+    if (fAdset && getAdsetName(r) !== fAdset) return false;
+    if (fAd    && getAdName(r)    !== fAd)    return false;
+    if (onlyLeads) {
+      // Filtra ad rows pelo nível atual: precisa que a chave do nível tenha leads
+      if (currentLevel === 'campaign') {
+        const c = getCampName(r);
+        if (c && !leadKeys.camps.has(c)) return false;
+      } else if (currentLevel === 'adset') {
+        const a = getAdsetName(r);
+        if (a && !leadKeys.adsets.has(a)) return false;
+      } else if (currentLevel === 'ad') {
+        const ad = getAdName(r);
+        if (ad && !leadKeys.ads.has(ad)) return false;
+      }
+    }
     return true;
   });
 
-  // Filtra conversões pelo período + campanha (utm_campaign)
-  const convRows = RAW.conv.filter(r => {
-    if (campFilter) {
-      const rc = (r.utm_campaign || '').trim();
-      if (!rc) return false;
-      const match = rc === campFilter ||
-        rc.toLowerCase().includes(campFilter.toLowerCase()) ||
-        campFilter.toLowerCase().includes(rc.toLowerCase());
-      if (!match) return false;
-    }
+  // Filtro de Conversões (mesmos filtros aplicados)
+  let convRows = RAW.conv.filter(r => {
     if (convDateCol) {
       const d = parseDate(r[convDateCol]);
       if (!inPeriod(d)) return false;
     }
+    if (fCamp  && (r.utm_campaign || '').trim() !== fCamp)  return false;
+    if (fAdset && (r.utm_content  || '').trim() !== fAdset) return false;
+    if (fAd    && (r.utm_term     || '').trim() !== fAd)    return false;
     return true;
   });
 
@@ -1041,12 +1128,17 @@ function renderTrafego() {
   const cpl   = leads > 0 ? spend / leads : 0;
   const convRate = clicks > 0 && leads > 0 ? leads / clicks * 100 : 0;
 
-  // KPIs
+  const filterDesc = [
+    fCamp  && `Camp: ${fCamp}`,
+    fAdset && `Conj: ${fAdset}`,
+    fAd    && `An: ${fAd}`,
+  ].filter(Boolean).join(' · ') || 'Todas';
+
   document.getElementById('kpiTrafego').innerHTML = `
     <div class="kpi-card red">
       <div class="kpi-label">Verba Gasta</div>
       <div class="kpi-value red small">${brl(spend)}</div>
-      <div class="kpi-sub">no período selecionado</div>
+      <div class="kpi-sub">${onlyLeads ? 'só com leads' : 'no período'}</div>
     </div>
     <div class="kpi-card teal">
       <div class="kpi-label">Impressões</div>
@@ -1079,13 +1171,13 @@ function renderTrafego() {
       <div class="kpi-sub">${fmt(leads)} de ${fmt(clicks)} cliques</div>
     </div>
     <div class="kpi-card red">
-      <div class="kpi-label">Período</div>
-      <div class="kpi-value red small">${dateKey(filterFrom).slice(5)} → ${dateKey(filterTo).slice(5)}</div>
-      <div class="kpi-sub">${campFilter ? 'campanha filtrada' : 'todas as campanhas'}</div>
+      <div class="kpi-label">Filtro Ativo</div>
+      <div class="kpi-value red tiny" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${filterDesc}">${filterDesc}</div>
+      <div class="kpi-sub">${dateKey(filterFrom).slice(5)} → ${dateKey(filterTo).slice(5)}</div>
     </div>
   `;
 
-  // Daily charts
+  // Charts diários
   const byDaySpend = {};
   const byDayLeads = {};
 
@@ -1103,13 +1195,10 @@ function renderTrafego() {
     byDayLeads[k] = (byDayLeads[k]||0) + 1;
   });
 
-  // Range completo
   const dates = [];
   if (filterFrom && filterTo) {
-    let cur = new Date(filterFrom);
-    cur.setHours(0,0,0,0);
-    const end = new Date(filterTo);
-    end.setHours(0,0,0,0);
+    let cur = new Date(filterFrom); cur.setHours(0,0,0,0);
+    const end = new Date(filterTo); end.setHours(0,0,0,0);
     while (cur <= end) {
       dates.push(dateKey(cur));
       cur.setDate(cur.getDate()+1);
@@ -1123,26 +1212,15 @@ function renderTrafego() {
   if (chartSpend) chartSpend.destroy();
   chartSpend = new Chart(document.getElementById('chartSpend'), {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Verba (R$)',
-        data: spendVals,
-        backgroundColor: 'rgba(255,74,74,0.25)',
-        borderColor: '#ff4a4a',
-        borderWidth: 1.5,
-        borderRadius: 3,
-      }]
-    },
+    data: { labels, datasets: [{ label:'Verba (R$)', data:spendVals,
+      backgroundColor:'rgba(255,74,74,0.25)', borderColor:'#ff4a4a', borderWidth:1.5, borderRadius:3 }]},
     options: {
       responsive:true, maintainAspectRatio:false,
       plugins: {
         legend:{display:false},
-        tooltip:{
-          backgroundColor:'#0e1418', borderColor:'#1a2830', borderWidth:1,
+        tooltip:{ backgroundColor:'#0e1418', borderColor:'#1a2830', borderWidth:1,
           titleColor:'#a8c0c8', bodyColor:'#e8f4f8',
-          callbacks: { label: ctx => ' ' + brl(ctx.raw) }
-        }
+          callbacks: { label: ctx => ' ' + brl(ctx.raw) } }
       },
       scales: {
         x:{ grid:{color:'#1a2830'}, ticks:{color:'#4a6070', font:{family:'DM Mono',size:10}, maxRotation:0, autoSkip:true} },
@@ -1154,25 +1232,14 @@ function renderTrafego() {
   if (chartLeads) chartLeads.destroy();
   chartLeads = new Chart(document.getElementById('chartLeads'), {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Leads',
-        data: leadVals,
-        backgroundColor: 'rgba(0,201,177,0.25)',
-        borderColor: '#00c9b1',
-        borderWidth: 1.5,
-        borderRadius: 3,
-      }]
-    },
+    data: { labels, datasets: [{ label:'Leads', data:leadVals,
+      backgroundColor:'rgba(0,201,177,0.25)', borderColor:'#00c9b1', borderWidth:1.5, borderRadius:3 }]},
     options: {
       responsive:true, maintainAspectRatio:false,
       plugins: {
         legend:{display:false},
-        tooltip:{
-          backgroundColor:'#0e1418', borderColor:'#1a2830', borderWidth:1,
-          titleColor:'#a8c0c8', bodyColor:'#e8f4f8',
-        }
+        tooltip:{ backgroundColor:'#0e1418', borderColor:'#1a2830', borderWidth:1,
+          titleColor:'#a8c0c8', bodyColor:'#e8f4f8' }
       },
       scales: {
         x:{ grid:{color:'#1a2830'}, ticks:{color:'#4a6070', font:{family:'DM Mono',size:10}, maxRotation:0, autoSkip:true} },
@@ -1181,10 +1248,25 @@ function renderTrafego() {
     }
   });
 
-  // Tabela por campanha
+  renderPerfTable(adsRows, convRows);
+
+  const lvlNames = { campaign:'campanha', adset:'conjunto', ad:'anúncio' };
+  document.getElementById('perfSub').textContent =
+    `Desempenho por ${lvlNames[currentLevel]} · ${onlyLeads ? 'apenas com leads' : 'todos'}`;
+}
+
+function renderPerfTable(adsRows, convRows) {
+  const adsKeyFn = currentLevel === 'campaign' ? getCampName
+                  : currentLevel === 'adset'   ? getAdsetName
+                                                : getAdName;
+  const convKey  = currentLevel === 'campaign' ? 'utm_campaign'
+                  : currentLevel === 'adset'   ? 'utm_content'
+                                                : 'utm_term';
+
   const map = {};
   adsRows.forEach(r => {
-    const n = getCampName(r) || '(sem nome)';
+    const n = adsKeyFn(r);
+    if (!n) return;
     if (!map[n]) map[n] = { spend:0, imp:0, clicks:0, lpv:0, leads:0 };
     map[n].spend  += getSpend(r);
     map[n].imp    += getImp(r);
@@ -1192,15 +1274,17 @@ function renderTrafego() {
     map[n].lpv    += getLPV(r);
   });
 
+  // Conta leads por chave (com fuzzy match)
   convRows.forEach(r => {
-    const rc = (r.utm_campaign || '').trim();
-    if (!rc) return;
-    if (map[rc]) { map[rc].leads++; return; }
-    const key = Object.keys(map).find(k =>
-      k.toLowerCase().includes(rc.toLowerCase()) ||
-      rc.toLowerCase().includes(k.toLowerCase())
+    const k = (r[convKey] || '').trim();
+    if (!k) return;
+    if (map[k]) { map[k].leads++; return; }
+    const fuzzy = Object.keys(map).find(name =>
+      name.toLowerCase() === k.toLowerCase() ||
+      name.toLowerCase().includes(k.toLowerCase()) ||
+      k.toLowerCase().includes(name.toLowerCase())
     );
-    if (key) map[key].leads++;
+    if (fuzzy) map[fuzzy].leads++;
   });
 
   const sorted = Object.entries(map).sort((a,b) => b[1].spend - a[1].spend);
@@ -1229,7 +1313,7 @@ function renderTrafego() {
   }).join('');
 
   if (!sorted.length) {
-    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--text2);padding:28px;">Nenhum dado para o período / campanha selecionados</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--text2);padding:28px;">Nenhum dado para o filtro atual</td></tr>';
   }
 }
 
@@ -1238,6 +1322,11 @@ function saveConfigAndLoad() {
   GID_ETAPAS = document.getElementById('gidEtapas').value.trim();
   GID_CONV   = document.getElementById('gidConversoes').value.trim();
   GID_ADS    = document.getElementById('gidAds').value.trim();
+  try {
+    localStorage.setItem(CFG_KEY, JSON.stringify({
+      gidEtapas: GID_ETAPAS, gidConv: GID_CONV, gidAds: GID_ADS
+    }));
+  } catch {}
   currentTab = 'funil';
   loadAll();
 }
@@ -1248,8 +1337,6 @@ document.getElementById('gidConversoes').value = GID_CONV;
 document.getElementById('gidAds').value        = GID_ADS;
 
 loadAll();
-
-// Auto-refresh a cada 2 minutos
 setInterval(loadAll, 120000);
 </script>
 </body>
