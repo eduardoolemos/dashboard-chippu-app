@@ -419,6 +419,45 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
     <div id="trafegoContent">
       <div class="kpi-grid" id="kpiTrafego"></div>
 
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div class="card-title">Top Ads</div>
+          <div class="card-sub">Maior volume de leads gerados</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Anúncio</th>
+                <th>Verba</th>
+                <th>Leads</th>
+                <th>CPL</th>
+                <th>CPM</th>
+                <th>CPC</th>
+                <th>CTR</th>
+              </tr></thead>
+              <tbody id="bodyTopAds"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Top Conjuntos</div>
+          <div class="card-sub">Maior volume de leads gerados</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Conjunto</th>
+                <th>Verba</th>
+                <th>Leads</th>
+                <th>CPL</th>
+                <th>CPM</th>
+                <th>CPC</th>
+                <th>CTR</th>
+              </tr></thead>
+              <tbody id="bodyTopAdsets"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div class="grid-2" style="margin-bottom:24px;">
         <div class="card">
           <div class="card-title">Verba Diária</div>
@@ -1160,6 +1199,66 @@ function onToggleLeads() {
   renderTrafego();
 }
 
+function renderTopLeadBlocks(adsRows) {
+  const dateCol = getConvDateCol();
+
+  function mount(level, bodyId) {
+    const getName = level === 'ad' ? getAdName : getAdsetName;
+    const convKey = level === 'ad' ? 'utm_term' : 'utm_content';
+
+    const map = {};
+    adsRows.forEach(r => {
+      const name = getName(r);
+      if (!name) return;
+      const key = normKey(name);
+      if (!map[key]) map[key] = { displayName: name, spend: 0, imp: 0, clicks: 0, leads: 0 };
+      map[key].spend += getSpend(r);
+      map[key].imp += getImp(r);
+      map[key].clicks += getClicks(r);
+    });
+
+    RAW.conv.forEach(r => {
+      const utmVal = (r[convKey] || '').trim();
+      if (!utmVal || utmVal === '-' || utmVal.startsWith('{{')) return;
+      if (dateCol) {
+        const d = parseDate(r[dateCol]);
+        if (!inPeriod(d)) return;
+      }
+      const key = normKey(utmVal);
+      if (map[key]) map[key].leads++;
+    });
+
+    const rows = Object.values(map)
+      .sort((a, b) => (b.leads - a.leads) || (b.spend - a.spend))
+      .slice(0, 7);
+
+    const body = document.getElementById(bodyId);
+    if (!rows.length) {
+      body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2);padding:20px;">Sem dados para o filtro atual</td></tr>';
+      return;
+    }
+
+    body.innerHTML = rows.map(v => {
+      const ctr = v.imp > 0 ? (v.clicks / v.imp * 100) : 0;
+      const cpm = v.imp > 0 ? (v.spend / v.imp * 1000) : 0;
+      const cpc = v.clicks > 0 ? (v.spend / v.clicks) : 0;
+      const cpl = v.leads > 0 ? (v.spend / v.leads) : 0;
+      return `<tr>
+        <td class="td-name" title="${v.displayName}">${v.displayName}</td>
+        <td class="td-red">${brl(v.spend)}</td>
+        <td class="td-teal">${v.leads > 0 ? fmt(v.leads) : '<span class="td-na">—</span>'}</td>
+        <td class="td-gold">${v.leads > 0 ? brl(cpl) : '<span class="td-na">—</span>'}</td>
+        <td class="td-mono">${v.imp > 0 ? brl(cpm) : '<span class="td-na">—</span>'}</td>
+        <td class="td-mono">${v.clicks > 0 ? brl(cpc) : '<span class="td-na">—</span>'}</td>
+        <td class="td-purple">${v.imp > 0 ? pct(ctr) : '<span class="td-na">—</span>'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  mount('ad', 'bodyTopAds');
+  mount('adset', 'bodyTopAdsets');
+}
+
 function onCampaignContainsChange() {
   campaignContains = (document.getElementById('campContains')?.value || '').trim();
   try {
@@ -1256,6 +1355,7 @@ function renderTrafego() {
   });
 
   renderAdPreview(adsRows, fAd);
+  renderTopLeadBlocks(adsRows);
 
   // Agrega métricas de ads
   let spend=0, imp=0, clicks=0, lpv=0;
