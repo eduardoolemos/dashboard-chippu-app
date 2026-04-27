@@ -1745,9 +1745,10 @@ function renderPerfTable(adsRows) {
       const adsetSel = document.getElementById('adsetSelect');
       const adSel = document.getElementById('adSelect');
       if (!campSel || !adsetSel || !adSel || !perfKey) return;
+      const targetName = map[perfKey]?.displayName || '';
 
       if (currentLevel === 'campaign') {
-        campSel.value = map[perfKey]?.displayName || '';
+        campSel.value = (campSel.value || '') === targetName ? '' : targetName;
         adsetSel.value = '';
         adSel.value = '';
         rebuildAllFilters();
@@ -1756,12 +1757,25 @@ function renderPerfTable(adsRows) {
       }
 
       if (currentLevel === 'adset') {
+        if ((adsetSel.value || '') === targetName) {
+          adsetSel.value = '';
+          adSel.value = '';
+          rebuildAllFilters();
+          renderTrafego();
+          return;
+        }
         const sample = adsRows.find(r => normKey(getAdsetName(r)) === perfKey);
         if (sample) campSel.value = getCampName(sample) || '';
         rebuildAllFilters();
-        adsetSel.value = map[perfKey]?.displayName || '';
+        adsetSel.value = targetName;
         adSel.value = '';
         rebuildAllFilters();
+        renderTrafego();
+        return;
+      }
+
+      if ((adSel.value || '') === targetName) {
+        adSel.value = '';
         renderTrafego();
         return;
       }
@@ -1773,7 +1787,7 @@ function renderPerfTable(adsRows) {
         adsetSel.value = getAdsetName(sample) || '';
         rebuildAllFilters();
       }
-      adSel.value = map[perfKey]?.displayName || '';
+      adSel.value = targetName;
       renderTrafego();
     });
   });
