@@ -937,10 +937,9 @@ function countLeadsInPeriod() {
   if (!RAW.conv.length) return 0;
   const dateCol = getConvDateCol();
   return RAW.conv.filter(r => {
-    // Só conta leads pagos: utm_campaign precisa estar preenchido
     const camp = (r.utm_campaign || '').trim();
-    if (!camp) return false;
-    // Filtra por período se houver coluna de data
+    // Ignora valores inválidos: vazio, '-', placeholders de pixel mal configurado
+    if (!camp || camp === '-' || camp.startsWith('{{')) return false;
     if (dateCol) {
       const d = parseDate(r[dateCol]);
       if (!inPeriod(d)) return false;
@@ -949,14 +948,13 @@ function countLeadsInPeriod() {
   }).length;
 }
 
-// ── Leads por dia (para gráfico) — apenas leads pagos (utm_campaign preenchido) ──
+// ── Leads por dia (para gráfico) — apenas leads pagos válidos ──
 function leadsByDay() {
   const dateCol = getConvDateCol();
   const byDay = {};
   RAW.conv.forEach(r => {
-    // Só leads pagos
     const camp = (r.utm_campaign || '').trim();
-    if (!camp) return;
+    if (!camp || camp === '-' || camp.startsWith('{{')) return;
     if (dateCol) {
       const d = parseDate(r[dateCol]);
       if (!inPeriod(d)) return;
@@ -1021,9 +1019,10 @@ function leadKeysInPeriod() {
     const c  = (r.utm_campaign || '').trim();
     const as = (r.utm_content  || '').trim();
     const ad = (r.utm_term     || '').trim();
-    if (c)  camps.add(c);
-    if (as) adsets.add(as);
-    if (ad) ads.add(ad);
+    // Ignora valores inválidos
+    if (c && c !== '-' && !c.startsWith('{{'))  camps.add(c.toLowerCase());
+    if (as && as !== '-' && !as.startsWith('{{')) adsets.add(as.toLowerCase());
+    if (ad && ad !== '-' && !ad.startsWith('{{')) ads.add(ad.toLowerCase());
   });
   return { camps, adsets, ads };
 }
@@ -1040,7 +1039,7 @@ function rebuildAllFilters() {
   const curAd    = document.getElementById('adSelect').value;
 
   let camps = [...new Set(adsInPeriod.map(getCampName).filter(Boolean))];
-  if (onlyLeads) camps = camps.filter(c => leadKeys.camps.has(c));
+  if (onlyLeads) camps = camps.filter(c => leadKeys.camps.has(c.toLowerCase()));
   camps.sort();
   fillSelect('campSelect', camps, curCamp, 'Todas');
   const selCamp = camps.includes(curCamp) ? curCamp : '';
@@ -1049,7 +1048,7 @@ function rebuildAllFilters() {
     ? adsInPeriod.filter(r => getCampName(r) === selCamp)
     : adsInPeriod;
   let adsets = [...new Set(adsetsRows.map(getAdsetName).filter(Boolean))];
-  if (onlyLeads) adsets = adsets.filter(a => leadKeys.adsets.has(a));
+  if (onlyLeads) adsets = adsets.filter(a => leadKeys.adsets.has(a.toLowerCase()));
   adsets.sort();
   fillSelect('adsetSelect', adsets, curAdset, 'Todos');
   const selAdset = adsets.includes(curAdset) ? curAdset : '';
@@ -1058,7 +1057,7 @@ function rebuildAllFilters() {
   if (selCamp)  adsRowsFiltered = adsRowsFiltered.filter(r => getCampName(r) === selCamp);
   if (selAdset) adsRowsFiltered = adsRowsFiltered.filter(r => getAdsetName(r) === selAdset);
   let adsList = [...new Set(adsRowsFiltered.map(getAdName).filter(Boolean))];
-  if (onlyLeads) adsList = adsList.filter(a => leadKeys.ads.has(a));
+  if (onlyLeads) adsList = adsList.filter(a => leadKeys.ads.has(a.toLowerCase()));
   adsList.sort();
   fillSelect('adSelect', adsList, curAd, 'Todos');
 }
@@ -1274,102 +1273,58 @@ function renderTrafego() {
 }
 
 // ── TABELA DE DESEMPENHO ──────────────────────────────────────────────
-// Linkagem: utm_campaign (conv) ↔ Campaign Name (ads)
-//           utm_content  (conv) ↔ Adset Name   (ads)
-//           utm_term     (conv) ↔ Ad Name       (ads)
+// Linkagem direta (case-insensitive):
+//   utm_campaign (conv) ↔ Campaign Name (gerenciador)
+//   utm_content  (conv) ↔ Adset Name   (gerenciador)
+//   utm_term     (conv) ↔ Ad Name       (gerenciador)
 function renderPerfTable(adsRows) {
   const dateCol = getConvDateCol();
 
-  // Qual campo UTM usar nas conversões para o nível atual
   const convUtmKey = currentLevel === 'campaign' ? 'utm_campaign'
                    : currentLevel === 'adset'    ? 'utm_content'
                                                  : 'utm_term';
 
-  // Qual campo nome usar no gerenciador para o nível atual
   const adsNameFn  = currentLevel === 'campaign' ? getCampName
                    : currentLevel === 'adset'    ? getAdsetName
                                                  : getAdName;
 
-  // ── PASSO 1: Coleta os valores UTM únicos das conversões no período ──
-  // Esses são os "nomes reais" que vamos usar como chave do mapa
-  const convUtmValues = new Set();
-  RAW.conv.forEach(r => {
-    if (dateCol) {
-      const d = parseDate(r[dateCol]);
-      if (!inPeriod(d)) return;
-    }
-    const utmVal = (r[convUtmKey] || '').trim();
-    if (utmVal) convUtmValues.add(utmVal);
-  });
-
-  // ── PASSO 2: Para cada linha do gerenciador, descobre a UTM key correspondente
-  // Estratégia: o nome do gerenciador CONTÉM o valor UTM ou vice-versa (match parcial)
-  // Ex: Campaign Name "wh-captacao-leads-..." mapeia para utm_campaign "wh-captacao-lea..."
-  function matchUtmToAdsName(adsName, utmValues) {
-    const n = adsName.toLowerCase().trim();
-    // Exact match primeiro
-    for (const uv of utmValues) {
-      if (uv.toLowerCase() === n) return uv;
-    }
-    // O nome do gerenciador começa com o valor UTM (UTM é prefixo do nome completo)
-    for (const uv of utmValues) {
-      const u = uv.toLowerCase();
-      if (n.startsWith(u) || u.startsWith(n)) return uv;
-    }
-    // Contém
-    for (const uv of utmValues) {
-      const u = uv.toLowerCase();
-      if (n.includes(u) || u.includes(n)) return uv;
-    }
-    return null;
-  }
-
-  // ── PASSO 3: Agrega métricas do gerenciador por chave UTM ────────────
-  const map = {}; // chave = valor UTM da conversão
+  // ── PASSO 1: Agrega métricas do gerenciador por nome (lowercase como chave)
+  // Guarda também o nome original para exibição
+  const map = {}; // chave = adsName.toLowerCase()
   adsRows.forEach(r => {
     const adsName = adsNameFn(r);
     if (!adsName) return;
-
-    // Tenta achar qual UTM key corresponde a esse nome do gerenciador
-    const utmKey = matchUtmToAdsName(adsName, convUtmValues)
-                   || adsName; // fallback: usa o próprio nome se não achar UTM
-
-    if (!map[utmKey]) map[utmKey] = { spend:0, imp:0, clicks:0, lpv:0, leads:0, adsName };
-    map[utmKey].spend  += getSpend(r);
-    map[utmKey].imp    += getImp(r);
-    map[utmKey].clicks += getClicks(r);
-    map[utmKey].lpv    += getLPV(r);
+    const key = adsName.toLowerCase();
+    if (!map[key]) map[key] = { spend:0, imp:0, clicks:0, lpv:0, leads:0, displayName: adsName };
+    map[key].spend  += getSpend(r);
+    map[key].imp    += getImp(r);
+    map[key].clicks += getClicks(r);
+    map[key].lpv    += getLPV(r);
   });
 
-  // ── PASSO 4: Conta leads por UTM key ─────────────────────────────────
+  // ── PASSO 2: Conta leads das conversões, linkando pelo UTM (case-insensitive)
   RAW.conv.forEach(r => {
+    // Valida UTM
+    const utmVal = (r[convUtmKey] || '').trim();
+    if (!utmVal || utmVal === '-' || utmVal.startsWith('{{')) return;
+
+    // Filtra período
     if (dateCol) {
       const d = parseDate(r[dateCol]);
       if (!inPeriod(d)) return;
     }
-    const utmVal = (r[convUtmKey] || '').trim();
-    if (!utmVal) return;
-    if (map[utmVal]) {
-      map[utmVal].leads++;
-    } else {
-      // Tenta achar no mapa via match
-      const fuzzyKey = Object.keys(map).find(k => {
-        const kl = k.toLowerCase(), ul = utmVal.toLowerCase();
-        return kl === ul || kl.startsWith(ul) || ul.startsWith(kl) || kl.includes(ul) || ul.includes(kl);
-      });
-      if (fuzzyKey) map[fuzzyKey].leads++;
+
+    const key = utmVal.toLowerCase();
+    if (map[key]) {
+      map[key].leads++;
     }
+    // Se não achou match exato, não conta (evita false positives)
   });
 
   const sorted = Object.entries(map).sort((a,b) => b[1].spend - a[1].spend);
   const tbody = document.getElementById('bodyTrafego');
 
-  // Nome a exibir: prefere o nome do gerenciador (mais completo), mostra UTM key abaixo se diferente
-  tbody.innerHTML = sorted.map(([utmKey, v]) => {
-    const displayName = v.adsName && v.adsName !== utmKey
-      ? `<span title="${v.adsName}">${v.adsName}</span><br><span style="color:var(--text3);font-size:10px;">${utmKey}</span>`
-      : utmKey;
-
+  tbody.innerHTML = sorted.map(([key, v]) => {
     const ctr_c  = v.imp    > 0 ? v.clicks / v.imp * 100 : 0;
     const cpm_c  = v.imp    > 0 ? v.spend  / v.imp * 1000: 0;
     const cpc_c  = v.clicks > 0 ? v.spend  / v.clicks    : 0;
@@ -1377,7 +1332,7 @@ function renderPerfTable(adsRows) {
     const conv_c = v.clicks > 0 && v.leads > 0 ? v.leads / v.clicks * 100 : 0;
 
     return `<tr>
-      <td class="td-name" style="max-width:300px;" title="${v.adsName||utmKey}">${displayName}</td>
+      <td class="td-name" title="${v.displayName}">${v.displayName}</td>
       <td class="td-red">${brl(v.spend)}</td>
       <td class="td-mono">${fmt(v.imp)}</td>
       <td class="td-mono">${fmt(v.clicks)}</td>
