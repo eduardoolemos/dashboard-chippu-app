@@ -882,11 +882,18 @@ function fmt(n) {
 }
 function pct(n) { return n.toFixed(1)+'%'; }
 
+function normKey(v) {
+  return String(v || '')
+    .replace(/\uFEFF/g, '')
+    .trim()
+    .toLowerCase();
+}
+
 function parseDate(s) {
   if (!s) return null;
-  s = String(s).trim();
+  s = String(s).replace(/\uFEFF/g, '').trim();
   // ISO: YYYY-MM-DD
-  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
   if (m) return new Date(+m[1], +m[2]-1, +m[3]);
   // BR: DD/MM/YYYY (Google Sheets locale pt-BR exporta assim)
   m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
@@ -897,7 +904,8 @@ function parseDate(s) {
     const yy = +m[3];
     return new Date(yy < 50 ? 2000+yy : 1900+yy, +m[2]-1, +m[1]);
   }
-  return null;
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
 function dateKey(d) {
@@ -931,7 +939,11 @@ function getAdsDate(r)   { return r['Date'] || r['date'] || r['Data'] || ''; }
 
 // ── Detecta coluna de data nas conversões ──────────────────────────────
 function getConvDateCol() {
-  return findCol(RAW.conv[0], /^(data_hora|date|timestamp|data|criado|created)/i);
+  const keys = Object.keys(RAW.conv[0] || {});
+  return keys.find(k => {
+    const n = normKey(k).replace(/[\s_-]+/g, '');
+    return ['datahora','date','timestamp','data','criado','created'].some(x => n.includes(x));
+  }) || '';
 }
 
 // ── LEADS: contagem direta da aba conversões filtrada apenas por período
@@ -1023,9 +1035,9 @@ function leadKeysInPeriod() {
     const as = (r.utm_content  || '').trim();
     const ad = (r.utm_term     || '').trim();
     // Ignora valores inválidos
-    if (c && c !== '-' && !c.startsWith('{{'))  camps.add(c.toLowerCase());
-    if (as && as !== '-' && !as.startsWith('{{')) adsets.add(as.toLowerCase());
-    if (ad && ad !== '-' && !ad.startsWith('{{')) ads.add(ad.toLowerCase());
+    if (c && c !== '-' && !c.startsWith('{{'))  camps.add(normKey(c));
+    if (as && as !== '-' && !as.startsWith('{{')) adsets.add(normKey(as));
+    if (ad && ad !== '-' && !ad.startsWith('{{')) ads.add(normKey(ad));
   });
   return { camps, adsets, ads };
 }
@@ -1042,7 +1054,7 @@ function rebuildAllFilters() {
   const curAd    = document.getElementById('adSelect').value;
 
   let camps = [...new Set(adsInPeriod.map(getCampName).filter(Boolean))];
-  if (onlyLeads) camps = camps.filter(c => leadKeys.camps.has(c.toLowerCase()));
+  if (onlyLeads) camps = camps.filter(c => leadKeys.camps.has(normKey(c)));
   camps.sort();
   fillSelect('campSelect', camps, curCamp, 'Todas');
   const selCamp = camps.includes(curCamp) ? curCamp : '';
@@ -1051,7 +1063,7 @@ function rebuildAllFilters() {
     ? adsInPeriod.filter(r => getCampName(r) === selCamp)
     : adsInPeriod;
   let adsets = [...new Set(adsetsRows.map(getAdsetName).filter(Boolean))];
-  if (onlyLeads) adsets = adsets.filter(a => leadKeys.adsets.has(a.toLowerCase()));
+  if (onlyLeads) adsets = adsets.filter(a => leadKeys.adsets.has(normKey(a)));
   adsets.sort();
   fillSelect('adsetSelect', adsets, curAdset, 'Todos');
   const selAdset = adsets.includes(curAdset) ? curAdset : '';
@@ -1060,7 +1072,7 @@ function rebuildAllFilters() {
   if (selCamp)  adsRowsFiltered = adsRowsFiltered.filter(r => getCampName(r) === selCamp);
   if (selAdset) adsRowsFiltered = adsRowsFiltered.filter(r => getAdsetName(r) === selAdset);
   let adsList = [...new Set(adsRowsFiltered.map(getAdName).filter(Boolean))];
-  if (onlyLeads) adsList = adsList.filter(a => leadKeys.ads.has(a.toLowerCase()));
+  if (onlyLeads) adsList = adsList.filter(a => leadKeys.ads.has(normKey(a)));
   adsList.sort();
   fillSelect('adSelect', adsList, curAd, 'Todos');
 }
@@ -1122,13 +1134,13 @@ function renderTrafego() {
       const leadKeys = leadKeysInPeriod();
       if (currentLevel === 'campaign') {
         const c = getCampName(r);
-        if (c && !leadKeys.camps.has(c)) return false;
+        if (c && !leadKeys.camps.has(normKey(c))) return false;
       } else if (currentLevel === 'adset') {
         const a = getAdsetName(r);
-        if (a && !leadKeys.adsets.has(a)) return false;
+        if (a && !leadKeys.adsets.has(normKey(a))) return false;
       } else if (currentLevel === 'ad') {
         const ad = getAdName(r);
-        if (ad && !leadKeys.ads.has(ad)) return false;
+        if (ad && !leadKeys.ads.has(normKey(ad))) return false;
       }
     }
     return true;
@@ -1297,7 +1309,7 @@ function renderPerfTable(adsRows) {
   adsRows.forEach(r => {
     const adsName = adsNameFn(r);
     if (!adsName) return;
-    const key = adsName.toLowerCase();
+    const key = normKey(adsName);
     if (!map[key]) map[key] = { spend:0, imp:0, clicks:0, lpv:0, leads:0, displayName: adsName };
     map[key].spend  += getSpend(r);
     map[key].imp    += getImp(r);
@@ -1317,7 +1329,7 @@ function renderPerfTable(adsRows) {
       if (!inPeriod(d)) return;
     }
 
-    const key = utmVal.toLowerCase();
+    const key = normKey(utmVal);
     if (map[key]) {
       map[key].leads++;
     }
