@@ -88,6 +88,13 @@ html,body { background:var(--bg); color:var(--text); font-family:var(--font-body
 .card-header-row { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
 .card-header-row .card-sub { margin-bottom:0; }
 .chart-wrap { position:relative; }
+.ad-preview-box { display:flex; gap:16px; align-items:flex-start; }
+.ad-preview-thumb { width:150px; height:150px; border-radius:10px; border:1px solid var(--border2); object-fit:cover; background:var(--bg2); flex-shrink:0; }
+.ad-preview-meta { min-width:0; display:flex; flex-direction:column; gap:8px; }
+.ad-preview-name { color:var(--white); font-size:13px; line-height:1.4; word-break:break-word; }
+.ad-preview-muted { color:var(--text2); font-size:12px; }
+.ad-preview-link { display:inline-flex; align-items:center; justify-content:center; align-self:flex-start; margin-top:6px; padding:8px 12px; border-radius:8px; border:1px solid var(--border2); color:var(--teal); text-decoration:none; font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.06em; transition:all 0.15s; }
+.ad-preview-link:hover { border-color:var(--teal); background:var(--teal-dim); }
 
 .level-toggle { display:flex; gap:2px; background:var(--bg2); border:1px solid var(--border2); border-radius:8px; padding:3px; }
 .level-tab { padding:6px 14px; border-radius:5px; background:transparent; color:var(--text2); cursor:pointer; font-family:var(--font-mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; transition:all 0.15s; border:none; }
@@ -388,6 +395,12 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
           <option value="">Todos</option>
         </select>
       </div>
+    </div>
+
+    <div class="card" id="adPreviewCard" style="display:none; margin-bottom:16px;">
+      <div class="card-title">Preview do Anúncio</div>
+      <div class="card-sub">Dados da aba extração gerenciador</div>
+      <div id="adPreviewBody"></div>
     </div>
 
     <div id="trafegoEmpty" style="display:none;">
@@ -936,6 +949,8 @@ function getCampName(r)  { return (r['Campaign Name'] || r['campaign_name'] || r
 function getAdsetName(r) { return (r['Adset Name']    || r['adset_name']    || r['Conjunto'] || '').trim(); }
 function getAdName(r)    { return (r['Ad Name']       || r['ad_name']       || r['Anuncio']  || r['Anúncio'] || '').trim(); }
 function getAdsDate(r)   { return r['Date'] || r['date'] || r['Data'] || ''; }
+function getThumbUrl(r)  { return (r['Thumbnail URL'] || r['thumbnail_url'] || r['Thumbnail'] || '').trim(); }
+function getInstaPermalink(r) { return (r['Instagram Permalink URL'] || r['instagram_permalink_url'] || r['Permalink URL'] || '').trim(); }
 
 // ── Detecta coluna de data nas conversões ──────────────────────────────
 function getConvDateCol() {
@@ -1108,6 +1123,48 @@ function onToggleLeads() {
   renderTrafego();
 }
 
+function renderAdPreview(adsRows, fAd) {
+  const card = document.getElementById('adPreviewCard');
+  const body = document.getElementById('adPreviewBody');
+
+  if (!fAd) {
+    card.style.display = 'none';
+    body.innerHTML = '';
+    return;
+  }
+
+  const firstRow = adsRows.find(r => getAdName(r) === fAd) || null;
+  if (!firstRow) {
+    card.style.display = 'none';
+    body.innerHTML = '';
+    return;
+  }
+
+  const thumbUrl = getThumbUrl(firstRow);
+  const permalink = getInstaPermalink(firstRow);
+  const camp = getCampName(firstRow) || '—';
+  const adset = getAdsetName(firstRow) || '—';
+
+  card.style.display = 'block';
+  body.innerHTML = `
+    <div class="ad-preview-box">
+      ${thumbUrl
+        ? `<img class="ad-preview-thumb" src="${thumbUrl}" alt="Thumbnail do anúncio">`
+        : `<div class="ad-preview-thumb" style="display:flex;align-items:center;justify-content:center;color:var(--text2);font-family:var(--font-mono);font-size:10px;text-transform:uppercase;">Sem thumbnail</div>`
+      }
+      <div class="ad-preview-meta">
+        <div class="ad-preview-name">${fAd}</div>
+        <div class="ad-preview-muted">Campanha: ${camp}</div>
+        <div class="ad-preview-muted">Conjunto: ${adset}</div>
+        ${permalink
+          ? `<a class="ad-preview-link" href="${permalink}" target="_blank" rel="noopener noreferrer">Abrir anúncio no Instagram</a>`
+          : `<div class="ad-preview-muted">Sem Instagram Permalink URL para este anúncio.</div>`
+        }
+      </div>
+    </div>
+  `;
+}
+
 // ── RENDER TRÁFEGO ─────────────────────
 function renderTrafego() {
   if (!RAW.ads.length) {
@@ -1145,6 +1202,8 @@ function renderTrafego() {
     }
     return true;
   });
+
+  renderAdPreview(adsRows, fAd);
 
   // Agrega métricas de ads
   let spend=0, imp=0, clicks=0, lpv=0;
