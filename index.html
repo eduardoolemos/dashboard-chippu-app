@@ -257,6 +257,8 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
         <input type="text" id="gidAds" placeholder="907185909">
         <div class="config-hint">Dados do gerenciador de anúncios</div>
       </div>
+      <button type="button" class="btn-ghost" id="btnShortLink" onclick="generateShortShareLink()">Gerar link curto</button>
+      <div class="config-status" id="shortLinkStatus"></div>
       <button class="btn-load" onclick="saveConfigAndLoad()">Carregar Dashboard →</button>
     </div>
   </div>
@@ -549,6 +551,157 @@ let campaignContains = '';
 try {
   const savedTraffic = JSON.parse(localStorage.getItem(TRAFFIC_KEY) || '{}');
   campaignContains = (savedTraffic.campaignContains || '').trim();
+} catch {}
+
+function encodeShareCfg(payload) {
+  try {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/g, '');
+  } catch {
+    return '';
+  }
+}
+
+function decodeShareCfg(raw) {
+  try {
+    let b64 = String(raw || '').replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    return JSON.parse(decodeURIComponent(escape(atob(b64))));
+  } catch {
+    return null;
+  }
+}
+
+function readSharedCfgFromUrl() {
+  try {
+    const qp = new URLSearchParams(window.location.search);
+    const fromQuery = qp.get('cfg');
+    if (fromQuery) return decodeShareCfg(fromQuery);
+    if (window.location.hash && window.location.hash.startsWith('#cfg=')) {
+      return decodeShareCfg(window.location.hash.slice(5));
+    }
+  } catch {}
+  return null;
+}
+
+function writeSharedCfgToUrl(payload) {
+  try {
+    const encoded = encodeShareCfg(payload);
+    if (!encoded) return;
+    const u = new URL(window.location.href);
+    u.searchParams.delete('cfg');
+    u.hash = `cfg=${encoded}`;
+    window.history.replaceState({}, '', u.toString());
+  } catch {}
+}
+
+function buildSharePayload() {
+  return {
+    v: 1,
+    c: [GID_ETAPAS, GID_CONV, GID_ADS],
+    t: [campaignContains]
+  };
+}
+
+async function copyToClipboard(text) {
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {}
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', 'readonly');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return !!ok;
+  } catch {}
+  return false;
+}
+
+async function generateShortShareLink() {
+  const status = document.getElementById('shortLinkStatus');
+  const btn = document.getElementById('btnShortLink');
+  if (status) status.textContent = 'Gerando link curto...';
+  if (btn) btn.disabled = true;
+  try {
+    writeSharedCfgToUrl(buildSharePayload());
+    const longUrl = window.location.href;
+    const providers = [
+      async () => {
+        const endpoint = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`;
+        const res = await fetch(endpoint);
+        const txt = (await res.text()).trim();
+        if (!res.ok || !/^https?:\/\//i.test(txt)) throw new Error('tinyurl falhou');
+        return txt;
+      },
+      async () => {
+        const endpoint = `https://is.gd/create.php?format=simple&url=${encodeURIComponent(longUrl)}`;
+        const res = await fetch(endpoint);
+        const txt = (await res.text()).trim();
+        if (!res.ok || !/^https?:\/\//i.test(txt)) throw new Error('is.gd falhou');
+        return txt;
+      },
+      async () => {
+        const endpoint = `https://api.shrtco.de/v2/shorten?url=${encodeURIComponent(longUrl)}`;
+        const res = await fetch(endpoint);
+        const data = await res.json();
+        const short = data?.result?.full_short_link || data?.result?.short_link;
+        if (!res.ok || !data?.ok || !short) throw new Error('shrtco falhou');
+        return /^https?:\/\//i.test(short) ? short : `https://${short}`;
+      }
+    ];
+
+    let shortUrl = '';
+    let lastErr = null;
+    for (const run of providers) {
+      try {
+        shortUrl = await run();
+        if (shortUrl) break;
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    if (!shortUrl) throw lastErr || new Error('Serviço de encurtamento indisponível.');
+
+    const copied = await copyToClipboard(shortUrl);
+    if (status) {
+      status.textContent = copied
+        ? `Link curto copiado: ${shortUrl}`
+        : `Link curto gerado: ${shortUrl}`;
+    }
+  } catch (e) {
+    const copiedLong = await copyToClipboard(window.location.href);
+    if (status) {
+      status.textContent = copiedLong
+        ? 'Não foi possível encurtar agora. Copiei o link completo.'
+        : `Falha ao gerar link curto: ${e.message || 'erro desconhecido'}`;
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+try {
+  const shared = readSharedCfgFromUrl();
+  const cfgArr = Array.isArray(shared?.c) ? shared.c : null;
+  const trafficArr = Array.isArray(shared?.t) ? shared.t : null;
+  if (cfgArr) {
+    GID_ETAPAS = String(cfgArr[0] || GID_ETAPAS || '').trim();
+    GID_CONV = String(cfgArr[1] || GID_CONV || '').trim();
+    GID_ADS = String(cfgArr[2] || GID_ADS || '').trim();
+  }
+  if (trafficArr) {
+    campaignContains = String(trafficArr[0] || campaignContains || '').trim();
+  }
 } catch {}
 
 // ── TAB ────────────────────────────────
@@ -1264,6 +1417,7 @@ function onCampaignContainsChange() {
   try {
     localStorage.setItem(TRAFFIC_KEY, JSON.stringify({ campaignContains }));
   } catch {}
+  writeSharedCfgToUrl(buildSharePayload());
   document.getElementById('campSelect').value = '';
   document.getElementById('adsetSelect').value = '';
   document.getElementById('adSelect').value = '';
@@ -1587,6 +1741,7 @@ function saveConfigAndLoad() {
       gidEtapas: GID_ETAPAS, gidConv: GID_CONV, gidAds: GID_ADS
     }));
   } catch {}
+  writeSharedCfgToUrl(buildSharePayload());
   currentTab = 'funil';
   loadAll();
 }
@@ -1596,6 +1751,7 @@ document.getElementById('gidEtapas').value     = GID_ETAPAS;
 document.getElementById('gidConversoes').value = GID_CONV;
 document.getElementById('gidAds').value        = GID_ADS;
 document.getElementById('campContains').value  = campaignContains;
+writeSharedCfgToUrl(buildSharePayload());
 
 loadAll();
 setInterval(loadAll, 120000);
