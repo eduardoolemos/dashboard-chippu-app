@@ -113,6 +113,8 @@ html,body { background:var(--bg); color:var(--text); font-family:var(--font-body
 .date-inp:focus { border-color:var(--teal); }
 .camp-select { background:var(--bg2); border:1px solid var(--border2); border-radius:6px; padding:7px 10px; color:var(--white); font-family:var(--font-mono); font-size:11px; cursor:pointer; outline:none; min-width:150px; max-width:240px; }
 .camp-select:focus { border-color:var(--teal); }
+.text-filter { background:var(--bg2); border:1px solid var(--border2); border-radius:6px; padding:7px 10px; color:var(--white); font-family:var(--font-mono); font-size:11px; outline:none; min-width:220px; max-width:320px; }
+.text-filter:focus { border-color:var(--teal); }
 
 .toggle-switch { display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; margin-left:auto; }
 .toggle-switch input { display:none; }
@@ -378,6 +380,10 @@ tbody td { padding:11px 12px; font-size:13px; color:var(--text); }
 
     <div class="filter-bar">
       <div class="filter-row">
+        <span class="filter-label">Padrão campanha:</span>
+        <input class="text-filter" id="campContains" type="text" placeholder="Ex: wh-captacao" oninput="onCampaignContainsChange()">
+      </div>
+      <div class="filter-row">
         <span class="filter-label">Campanha:</span>
         <select class="camp-select" id="campSelect" onchange="onCampaignChange()">
           <option value="">Todas</option>
@@ -472,6 +478,7 @@ const PUBLISHED_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSkyevnt
 const EXPORT_BASE    = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
 
 const CFG_KEY = 'chippu_dash_cfg_v3';
+const TRAFFIC_KEY = 'chippu_dash_traffic_v1';
 
 let GID_ETAPAS = '1961049271';
 let GID_CONV   = '';
@@ -498,6 +505,12 @@ let currentLevel = 'campaign';
 
 let RAW = { etapas:[], conv:[], ads:[] };
 let filterFrom = null, filterTo = null;
+let campaignContains = '';
+
+try {
+  const savedTraffic = JSON.parse(localStorage.getItem(TRAFFIC_KEY) || '{}');
+  campaignContains = (savedTraffic.campaignContains || '').trim();
+} catch {}
 
 // ── TAB ────────────────────────────────
 function switchTab(tab) {
@@ -1080,8 +1093,13 @@ function rebuildAllFilters() {
   if (!RAW.ads.length) return;
   const onlyLeads = document.getElementById('onlyWithLeads')?.checked || false;
   const leadKeys = leadKeysInPeriod();
+  const campPattern = (document.getElementById('campContains')?.value || campaignContains || '').trim();
 
-  const adsInPeriod = RAW.ads.filter(r => inPeriod(parseDate(getAdsDate(r))));
+  const adsInPeriod = RAW.ads.filter(r => {
+    if (!inPeriod(parseDate(getAdsDate(r)))) return false;
+    if (campPattern && !normKey(getCampName(r)).includes(normKey(campPattern))) return false;
+    return true;
+  });
 
   const curCamp  = document.getElementById('campSelect').value;
   const curAdset = document.getElementById('adsetSelect').value;
@@ -1142,6 +1160,18 @@ function onToggleLeads() {
   renderTrafego();
 }
 
+function onCampaignContainsChange() {
+  campaignContains = (document.getElementById('campContains')?.value || '').trim();
+  try {
+    localStorage.setItem(TRAFFIC_KEY, JSON.stringify({ campaignContains }));
+  } catch {}
+  document.getElementById('campSelect').value = '';
+  document.getElementById('adsetSelect').value = '';
+  document.getElementById('adSelect').value = '';
+  rebuildAllFilters();
+  renderTrafego();
+}
+
 function renderAdPreview(adsRows, fAd) {
   const card = document.getElementById('adPreviewCard');
   const body = document.getElementById('adPreviewBody');
@@ -1198,12 +1228,15 @@ function renderTrafego() {
   const fAdset = document.getElementById('adsetSelect').value;
   const fAd    = document.getElementById('adSelect').value;
   const onlyLeads = document.getElementById('onlyWithLeads').checked;
+  const campPattern = (document.getElementById('campContains')?.value || campaignContains || '').trim();
 
   // Filtro principal de Ads
   let adsRows = RAW.ads.filter(r => {
     const d = parseDate(getAdsDate(r));
+    const campName = getCampName(r);
     if (!inPeriod(d)) return false;
-    if (fCamp  && getCampName(r)  !== fCamp)  return false;
+    if (campPattern && !normKey(campName).includes(normKey(campPattern))) return false;
+    if (fCamp  && campName !== fCamp)  return false;
     if (fAdset && getAdsetName(r) !== fAdset) return false;
     if (fAd    && getAdName(r)    !== fAd)    return false;
     if (onlyLeads) {
@@ -1462,6 +1495,7 @@ function saveConfigAndLoad() {
 document.getElementById('gidEtapas').value     = GID_ETAPAS;
 document.getElementById('gidConversoes').value = GID_CONV;
 document.getElementById('gidAds').value        = GID_ADS;
+document.getElementById('campContains').value  = campaignContains;
 
 loadAll();
 setInterval(loadAll, 120000);
