@@ -926,6 +926,35 @@ function getAdsetName(r) { return (r['Adset Name']    || r['adset_name']    || r
 function getAdName(r)    { return (r['Ad Name']       || r['ad_name']       || r['Anuncio']  || r['Anúncio'] || '').trim(); }
 function getAdsDate(r)   { return r['Date'] || r['date'] || r['Data'] || ''; }
 
+// ── Detecta coluna de data nas conversões ──────────────────────────────
+function getConvDateCol() {
+  return findCol(RAW.conv[0], /^(data_hora|date|timestamp|data|criado|created)/i);
+}
+
+// ── LEADS: contagem direta da aba conversões filtrada apenas por período
+// Não depende de UTM — simplesmente conta linhas no período selecionado
+function countLeadsInPeriod() {
+  if (!RAW.conv.length) return 0;
+  const dateCol = getConvDateCol();
+  // Se não achamos coluna de data, retorna o total sem filtro de período
+  if (!dateCol) return RAW.conv.length;
+  return RAW.conv.filter(r => inPeriod(parseDate(r[dateCol]))).length;
+}
+
+// ── Leads por dia (para gráfico) ──────────────────────────────────────
+function leadsByDay() {
+  const dateCol = getConvDateCol();
+  const byDay = {};
+  if (!dateCol) return byDay;
+  RAW.conv.forEach(r => {
+    const d = parseDate(r[dateCol]);
+    if (!inPeriod(d)) return;
+    const k = dateKey(d);
+    byDay[k] = (byDay[k] || 0) + 1;
+  });
+  return byDay;
+}
+
 // ── PERIOD ─────────────────────────────
 function setPeriodSilent(days) {
   filterTo   = new Date(); filterTo.setHours(23,59,59,999);
@@ -969,13 +998,12 @@ function setLevel(level) {
 }
 
 // ── FILTROS EM CASCATA ─────────────────
-// Identifica conjuntos de campanhas/adsets/ads que tiveram leads no período
 function leadKeysInPeriod() {
-  const convDateCol = findCol(RAW.conv[0], /^(data_hora|date|timestamp|data|criado|created)/i);
+  const dateCol = getConvDateCol();
   const camps = new Set(), adsets = new Set(), ads = new Set();
   RAW.conv.forEach(r => {
-    if (convDateCol) {
-      const d = parseDate(r[convDateCol]);
+    if (dateCol) {
+      const d = parseDate(r[dateCol]);
       if (!inPeriod(d)) return;
     }
     const c  = (r.utm_campaign || '').trim();
@@ -993,21 +1021,18 @@ function rebuildAllFilters() {
   const onlyLeads = document.getElementById('onlyWithLeads')?.checked || false;
   const leadKeys = leadKeysInPeriod();
 
-  // Linhas de Ads dentro do período
   const adsInPeriod = RAW.ads.filter(r => inPeriod(parseDate(getAdsDate(r))));
 
   const curCamp  = document.getElementById('campSelect').value;
   const curAdset = document.getElementById('adsetSelect').value;
   const curAd    = document.getElementById('adSelect').value;
 
-  // Campanhas disponíveis
   let camps = [...new Set(adsInPeriod.map(getCampName).filter(Boolean))];
   if (onlyLeads) camps = camps.filter(c => leadKeys.camps.has(c));
   camps.sort();
   fillSelect('campSelect', camps, curCamp, 'Todas');
   const selCamp = camps.includes(curCamp) ? curCamp : '';
 
-  // Conjuntos
   const adsetsRows = selCamp
     ? adsInPeriod.filter(r => getCampName(r) === selCamp)
     : adsInPeriod;
@@ -1017,7 +1042,6 @@ function rebuildAllFilters() {
   fillSelect('adsetSelect', adsets, curAdset, 'Todos');
   const selAdset = adsets.includes(curAdset) ? curAdset : '';
 
-  // Anúncios
   let adsRowsFiltered = adsInPeriod;
   if (selCamp)  adsRowsFiltered = adsRowsFiltered.filter(r => getCampName(r) === selCamp);
   if (selAdset) adsRowsFiltered = adsRowsFiltered.filter(r => getAdsetName(r) === selAdset);
@@ -1073,9 +1097,6 @@ function renderTrafego() {
   const fAd    = document.getElementById('adSelect').value;
   const onlyLeads = document.getElementById('onlyWithLeads').checked;
 
-  const convDateCol = findCol(RAW.conv[0], /^(data_hora|date|timestamp|data|criado|created)/i);
-  const leadKeys = leadKeysInPeriod();
-
   // Filtro principal de Ads
   let adsRows = RAW.ads.filter(r => {
     const d = parseDate(getAdsDate(r));
@@ -1084,7 +1105,7 @@ function renderTrafego() {
     if (fAdset && getAdsetName(r) !== fAdset) return false;
     if (fAd    && getAdName(r)    !== fAd)    return false;
     if (onlyLeads) {
-      // Filtra ad rows pelo nível atual: precisa que a chave do nível tenha leads
+      const leadKeys = leadKeysInPeriod();
       if (currentLevel === 'campaign') {
         const c = getCampName(r);
         if (c && !leadKeys.camps.has(c)) return false;
@@ -1099,19 +1120,7 @@ function renderTrafego() {
     return true;
   });
 
-  // Filtro de Conversões (mesmos filtros aplicados)
-  let convRows = RAW.conv.filter(r => {
-    if (convDateCol) {
-      const d = parseDate(r[convDateCol]);
-      if (!inPeriod(d)) return false;
-    }
-    if (fCamp  && (r.utm_campaign || '').trim() !== fCamp)  return false;
-    if (fAdset && (r.utm_content  || '').trim() !== fAdset) return false;
-    if (fAd    && (r.utm_term     || '').trim() !== fAd)    return false;
-    return true;
-  });
-
-  // Agrega ads
+  // Agrega métricas de ads
   let spend=0, imp=0, clicks=0, lpv=0;
   adsRows.forEach(r => {
     spend  += getSpend(r);
@@ -1124,8 +1133,12 @@ function renderTrafego() {
   const cpm = imp    > 0 ? spend  / imp * 1000 : 0;
   const cpc = clicks > 0 ? spend  / clicks     : 0;
 
-  const leads = convRows.length;
-  const cpl   = leads > 0 ? spend / leads : 0;
+  // ── LEADS: contagem direta da aba CONVERSOES no período ──────────────
+  // Independe de UTM — conta todas as linhas da aba no período selecionado
+  const leads = countLeadsInPeriod();
+
+  // CPL = verba gasta no período ÷ leads convertidos no período
+  const cpl      = leads > 0 && spend > 0 ? spend / leads : 0;
   const convRate = clicks > 0 && leads > 0 ? leads / clicks * 100 : 0;
 
   const filterDesc = [
@@ -1158,12 +1171,12 @@ function renderTrafego() {
     <div class="kpi-card teal">
       <div class="kpi-label">Leads Captados</div>
       <div class="kpi-value teal">${fmt(leads)}</div>
-      <div class="kpi-sub">via funil no período</div>
+      <div class="kpi-sub">conversões no período</div>
     </div>
     <div class="kpi-card gold">
       <div class="kpi-label">Custo por Lead (CPL)</div>
-      <div class="kpi-value gold small">${leads > 0 ? brl(cpl) : '—'}</div>
-      <div class="kpi-sub">verba ÷ leads</div>
+      <div class="kpi-value gold small">${leads > 0 && spend > 0 ? brl(cpl) : '—'}</div>
+      <div class="kpi-sub">verba ÷ leads no período</div>
     </div>
     <div class="kpi-card purple">
       <div class="kpi-label">Conv. Cliques → Lead</div>
@@ -1179,21 +1192,14 @@ function renderTrafego() {
 
   // Charts diários
   const byDaySpend = {};
-  const byDayLeads = {};
-
   adsRows.forEach(r => {
     const k = dateKey(parseDate(getAdsDate(r)));
     if (!k) return;
     byDaySpend[k] = (byDaySpend[k]||0) + getSpend(r);
   });
 
-  convRows.forEach(r => {
-    if (!convDateCol) return;
-    const d = parseDate(r[convDateCol]);
-    if (!d) return;
-    const k = dateKey(d);
-    byDayLeads[k] = (byDayLeads[k]||0) + 1;
-  });
+  // Leads por dia via função centralizada
+  const byDayLeads = leadsByDay();
 
   const dates = [];
   if (filterFrom && filterTo) {
@@ -1207,7 +1213,7 @@ function renderTrafego() {
 
   const labels = dates.map(k => k.slice(5));
   const spendVals = dates.map(k => byDaySpend[k] || 0);
-  const leadVals  = dates.map(k => byDayLeads[k] || 0);
+  const leadVals  = dates.map(k => byDayLeads[k]  || 0);
 
   if (chartSpend) chartSpend.destroy();
   chartSpend = new Chart(document.getElementById('chartSpend'), {
@@ -1248,20 +1254,24 @@ function renderTrafego() {
     }
   });
 
-  renderPerfTable(adsRows, convRows);
+  renderPerfTable(adsRows);
 
   const lvlNames = { campaign:'campanha', adset:'conjunto', ad:'anúncio' };
   document.getElementById('perfSub').textContent =
     `Desempenho por ${lvlNames[currentLevel]} · ${onlyLeads ? 'apenas com leads' : 'todos'}`;
 }
 
-function renderPerfTable(adsRows, convRows) {
+// ── TABELA DE DESEMPENHO ──────────────────────────────────────────────
+// Leads na tabela de detalhes usam UTM para cruzamento por campanha/conjunto/anúncio
+function renderPerfTable(adsRows) {
   const adsKeyFn = currentLevel === 'campaign' ? getCampName
                   : currentLevel === 'adset'   ? getAdsetName
                                                 : getAdName;
   const convKey  = currentLevel === 'campaign' ? 'utm_campaign'
                   : currentLevel === 'adset'   ? 'utm_content'
                                                 : 'utm_term';
+
+  const dateCol = getConvDateCol();
 
   const map = {};
   adsRows.forEach(r => {
@@ -1274,8 +1284,12 @@ function renderPerfTable(adsRows, convRows) {
     map[n].lpv    += getLPV(r);
   });
 
-  // Conta leads por chave (com fuzzy match)
-  convRows.forEach(r => {
+  // Conta leads por linha da tabela via UTM (para detalhe por campanha/conjunto/anúncio)
+  RAW.conv.forEach(r => {
+    if (dateCol) {
+      const d = parseDate(r[dateCol]);
+      if (!inPeriod(d)) return;
+    }
     const k = (r[convKey] || '').trim();
     if (!k) return;
     if (map[k]) { map[k].leads++; return; }
